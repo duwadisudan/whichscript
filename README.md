@@ -15,3 +15,11 @@ python example_analysis.py
 ```
 
 This will create `output/result.txt`, `output/result.txt.metadata.json`, and `output/result.txt.script`.
+
+## Running tests
+
+Install `pytest` and run the test suite using:
+
+```bash
+pytest
+```
