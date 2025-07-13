@@ -15,3 +15,7 @@ python example_analysis.py
 ```
 
 This will create `output/result.txt`, `output/result.txt.metadata.json`, and `output/result.txt.script`.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
