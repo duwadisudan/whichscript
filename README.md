@@ -8,7 +8,14 @@ Clone the repository and make sure `python3` is available on your system. The pa
 
 ## Usage
 
-Use `whichscript.save_output` to write text results to a file. A metadata JSON file and a copy of the executing script will be saved alongside your output.
+To manually save an output, call `whichscript.save_output` with the data and
+path. A metadata JSON file and a copy of the executing script will be written
+next to your output.
+
+For automatic logging of all file writes, call
+`whichscript.enable_auto_logging()` once at the start of your script. Any file
+opened in write mode will have its metadata and a copy of the calling script
+saved alongside it.
 
 ```bash
 python example_analysis.py
