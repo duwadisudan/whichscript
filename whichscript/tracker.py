@@ -3,16 +3,20 @@ import inspect
 import json
 import os
 import shutil
+import sys
 from typing import Any
 
 
 def _find_calling_script(current_file: str) -> str | None:
-    """Return the absolute path to the calling script, if found."""
-    stack = inspect.stack()
-    for frame in stack:
-        filename = frame.filename
-        if filename != current_file:
-            return os.path.abspath(filename)
+    """Return the top-level user script that ultimately triggered the write."""
+    for frame in reversed(inspect.stack()):
+        raw_filename = frame.filename
+        if raw_filename == current_file or raw_filename.startswith("<"):
+            continue
+        filename = os.path.abspath(raw_filename)
+        if filename.startswith(sys.base_prefix) or "site-packages" in filename:
+            continue
+        return filename
     return None
 
 
