@@ -1,0 +1,11 @@
+Windows Registry Editor Version 5.00
+
+; Adds a right-click menu entry to open the generating script for any file.
+; Update the path to pythonw.exe and open_generating_script.pyw as needed.
+
+[HKEY_CLASSES_ROOT\*\shell\whichscript_open]
+@="Open Generating Script"
+
+[HKEY_CLASSES_ROOT\*\shell\whichscript_open\command]
+@="C:\\Path\\To\\pythonw.exe \"U:\\eng_research_hrc_binauralhearinglab\\Sudan\\Labs\\Sen Lab\\whichscript\\whichscript\\open_generating_script.pyw\" \"%1\""
+
