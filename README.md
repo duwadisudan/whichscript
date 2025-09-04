@@ -36,6 +36,7 @@ Choose one:
 ## Quick Start
 
 ```python
+#start of whichscript code
 from whichscript import configure, enable_auto_logging
 
 # Minimal, recommended defaults
@@ -51,11 +52,13 @@ configure(
 )
 
 enable_auto_logging()
+#end of whichscript code
 
 # Your code as usual
 
 import matplotlib.pyplot as plt
 from pathlib import Path
+
 fig, ax = plt.subplots()
 ax.plot([1, 2, 3], [4, 5, 9])
 out = Path(r"<your_output_dir>\my_plot.png")
@@ -76,6 +79,8 @@ What you get:
 ## Example: sudan_plot_try.py
 
 ```python
+
+#start of whichscript code
 from whichscript import configure, enable_auto_logging
 
 configure(
@@ -91,7 +96,9 @@ configure(
 
 enable_auto_logging()
 
+#end of whichscript code
 
+# your usual code and imports of dependent modules
 from whichscript.localmod_demo import transform_points
 import matplotlib.pyplot as plt
 from pathlib import Path
