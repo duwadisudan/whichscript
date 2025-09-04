@@ -7,14 +7,18 @@ import sys
 import platform
 import hashlib
 import subprocess
+import zipfile
+import site
+import sysconfig
 from datetime import datetime
-from typing import Any
+from typing import Any, Sequence
+from pathlib import Path
 
+from .archiver import build_archive_for_output as _ws_build_archive
 
 # --- helpers ---------------------------------------------------------------
 
 def _find_calling_script(current_file: str) -> str | None:
-    """Return the top-level user script that ultimately triggered the write."""
     for frame in reversed(inspect.stack()):
         raw_filename = frame.filename
         if raw_filename == current_file or raw_filename.startswith("<"):
@@ -33,61 +37,76 @@ def _env_flag(name: str, default: str = "1") -> bool:
     return str(val).strip().lower() not in ("0", "false", "no", "off")
 
 
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, str(default)))
+    except Exception:
+        return default
+
 # --- runtime configuration (env + runtime overrides) ----------------------
 
-_cfg_write_metadata: bool = _env_flag("WHICH_SCRIPT_METADATA", "1")
-_cfg_snapshot_script: bool = _env_flag("WHICH_SCRIPT_SNAPSHOT", "1")
+_cfg_write_metadata: bool = _env_flag("WHICH_SCRIPT_METADATA", "0")  # default off per user
+_cfg_snapshot_script: bool = _env_flag("WHICH_SCRIPT_SNAPSHOT", "0")
 _cfg_snapshot_py: bool = _env_flag("WHICH_SCRIPT_SNAPSHOT_PY", "1")
+_cfg_local_imports_snapshot: bool = _env_flag("WHICH_SCRIPT_LOCAL_IMPORTS", "0")
+_cfg_local_imports_roots: list[str] | None = None
+_cfg_local_imports_max_files: int = _env_int("WHICH_SCRIPT_LOCAL_IMPORTS_MAX_FILES", 500)
+_cfg_local_imports_max_bytes: int = _env_int("WHICH_SCRIPT_LOCAL_IMPORTS_MAX_BYTES", 50_000_000)
+
+# archive controls (env or configure)
+_CFG_ARCHIVE = _env_flag("WHICH_SCRIPT_ARCHIVE", "1")
+_CFG_ARCHIVE_ONLY = _env_flag("WHICH_SCRIPT_ARCHIVE_ONLY", "0")
+_CFG_ARCHIVE_DIR = os.environ.get("WHICH_SCRIPT_ARCHIVE_DIR")
+_CFG_HIDE_SIDECARS = _env_flag("WHICH_SCRIPT_HIDE_SIDECARS", "1")
 
 
-def configure(*, metadata: bool | None = None,
+def configure(*,
+              metadata: bool | None = None,
               snapshot_script: bool | None = None,
-              snapshot_py: bool | None = None) -> None:
-    """Configure whichscript behavior at runtime.
-
-    Parameters
-    ----------
-    metadata : bool | None
-        If False, skip writing `<output>.metadata.json` files.
-    snapshot_script : bool | None
-        If False, skip writing `<output>.script` snapshots.
-    snapshot_py : bool | None
-        If False, skip writing `<output>.script.py` snapshots.
-    """
+              snapshot_py: bool | None = None,
+              local_imports_snapshot: bool | None = None,
+              local_imports_root: Sequence[str] | str | None = None,
+              local_imports_max_files: int | None = None,
+              local_imports_max_bytes: int | None = None,
+              archive: bool | None = None,
+              archive_only: bool | None = None,
+              archive_dir: str | None = None,
+              hide_sidecars: bool | None = None) -> None:
     global _cfg_write_metadata, _cfg_snapshot_script, _cfg_snapshot_py
+    global _cfg_local_imports_snapshot, _cfg_local_imports_roots
+    global _cfg_local_imports_max_files, _cfg_local_imports_max_bytes
+    global _CFG_ARCHIVE, _CFG_ARCHIVE_ONLY, _CFG_ARCHIVE_DIR, _CFG_HIDE_SIDECARS
+
     if metadata is not None:
         _cfg_write_metadata = bool(metadata)
     if snapshot_script is not None:
         _cfg_snapshot_script = bool(snapshot_script)
     if snapshot_py is not None:
         _cfg_snapshot_py = bool(snapshot_py)
+    if local_imports_snapshot is not None:
+        _cfg_local_imports_snapshot = bool(local_imports_snapshot)
+    if local_imports_root is not None:
+        if isinstance(local_imports_root, str):
+            _cfg_local_imports_roots = [os.path.abspath(local_imports_root)]
+        else:
+            _cfg_local_imports_roots = [os.path.abspath(p) for p in local_imports_root]
+    if local_imports_max_files is not None:
+        _cfg_local_imports_max_files = int(local_imports_max_files)
+    if local_imports_max_bytes is not None:
+        _cfg_local_imports_max_bytes = int(local_imports_max_bytes)
 
+    if archive is not None:
+        _CFG_ARCHIVE = bool(archive)
+    if archive_only is not None:
+        _CFG_ARCHIVE_ONLY = bool(archive_only)
+    if archive_dir is not None:
+        _CFG_ARCHIVE_DIR = archive_dir
+    if hide_sidecars is not None:
+        _CFG_HIDE_SIDECARS = bool(hide_sidecars)
 
+# --- reproducibility metadata --------------------------------------------
 
-def _write_script_snapshots(target_base: str, script_path: str) -> None:
-    """Write side-by-side script snapshots according to config flags, safely."""
-    global _skip_logging
-    # Avoid recursion if we are handling snapshot files themselves
-    if target_base.endswith(".script") or target_base.endswith(".script.py"):
-        return
-    if not (_cfg_snapshot_script or _cfg_snapshot_py):
-        return
-    try:
-        _skip_logging = True
-        if _cfg_snapshot_script:
-            try:
-                shutil.copy(script_path, target_base + ".script")
-            except Exception:
-                pass
-        if _cfg_snapshot_py:
-            try:
-                shutil.copy(script_path, target_base + ".script.py")
-            except Exception:
-                pass
-    finally:
-        _skip_logging = False
 _runtime_cache: dict[str, Any] | None = None
-
 
 def _safe_pip_freeze() -> list[str]:
     try:
@@ -172,58 +191,91 @@ def _collect_runtime_metadata(calling_script: str | None) -> dict[str, Any]:
     merged.update(meta)
     return merged
 
+# --- snapshot helpers ------------------------------------------------------
+
+_skip_logging = False
+
+
+def _maybe_set_hidden(path: str, hide: bool) -> None:
+    if not hide:
+        return
+    try:
+        if sys.platform.startswith('win') and os.path.exists(path):
+            subprocess.run(['attrib', '+H', path], check=False)
+    except Exception:
+        pass
+
+
+def _write_script_snapshots(target_base: str, script_path: str) -> None:
+    global _skip_logging
+    try:
+        _skip_logging = True
+        if _cfg_snapshot_py:
+            try:
+                dst = target_base + ".script.py"
+                shutil.copy(script_path, dst)
+                _maybe_set_hidden(dst, _CFG_HIDE_SIDECARS)
+            except Exception:
+                pass
+    finally:
+        _skip_logging = False
+
+# --- central archive -------------------------------------------------------
+
+def _auto_archive(target_base: str, metadata: dict[str, Any] | None, calling_script: str | None) -> None:
+    if not _CFG_ARCHIVE:
+        return
+    try:
+        roots = _cfg_local_imports_roots or ([os.path.dirname(calling_script)] if calling_script else [])
+        archive_dir = _CFG_ARCHIVE_DIR or os.path.join(os.path.expanduser('~'), 'whichscript_logs')
+        _ws_build_archive(
+            target_base,
+            archive_dir=archive_dir,
+            local_roots=roots,
+            metadata=metadata or {},
+        )
+    except Exception:
+        pass
 
 # --- public API ------------------------------------------------------------
 
 def save_output(data: Any, output_path: str) -> str:
-    """Save data to *output_path* and record the script that produced it.
-
-    Returns the (expected) path to the metadata file. When metadata is
-    disabled via config, the returned path may not exist.
-    """
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(str(data))
 
-    calling_script = os.environ.get("WHICH_SCRIPT_PATH") or _find_calling_script(__file__)
-    meta_path = output_path + ".metadata.json"
-
+    calling_script = _find_calling_script(__file__)
+    metadata: dict[str, Any] | None = None
     if _cfg_write_metadata:
         metadata = {
             "script_path": calling_script,
             "runtime": _collect_runtime_metadata(calling_script),
         }
-        with open(meta_path, "w", encoding="utf-8") as mf:
-            json.dump(metadata, mf, indent=2)
 
     if calling_script and os.path.exists(calling_script):
         _write_script_snapshots(output_path, calling_script)
 
-    return meta_path
+    _auto_archive(output_path, metadata, calling_script)
 
+    # Do not write local metadata sidecar per user preference
+    return output_path + ".metadata.json"
 
 # --- automatic logging ----------------------------------------------------
 
 _original_open = builtins.open
 _log_active = False
-_skip_logging = False
-
 
 def enable_auto_logging() -> None:
-    """Start logging all file writes globally."""
     global _log_active
     if not _log_active:
         builtins.open = _logging_open  # type: ignore[assignment]
         _log_active = True
 
-
 def disable_auto_logging() -> None:
-    """Stop global file write logging."""
     global _log_active
     if _log_active:
         builtins.open = _original_open  # type: ignore[assignment]
         _log_active = False
-
 
 def _logging_open(file: str, mode: str = "r", buffering: int = -1, encoding: str | None = None,
                   errors: str | None = None, newline: str | None = None,
@@ -241,27 +293,22 @@ def _logging_open(file: str, mode: str = "r", buffering: int = -1, encoding: str
         })
     return fh
 
-
 def _record_write(path: str, params: dict[str, Any]) -> None:
     global _skip_logging
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    calling_script = os.environ.get("WHICH_SCRIPT_PATH") or _find_calling_script(__file__)
+    calling_script = _find_calling_script(__file__)
 
+    metadata: dict[str, Any] | None = None
     if _cfg_write_metadata:
         metadata = {
             "script_path": calling_script,
             "open_params": params,
             "runtime": _collect_runtime_metadata(calling_script),
         }
-        meta_path = path + ".metadata.json"
-        try:
-            _skip_logging = True
-            with _original_open(meta_path, "w", encoding="utf-8") as mf:
-                json.dump(metadata, mf, indent=2)
-        finally:
-            _skip_logging = False
 
     if calling_script and os.path.exists(calling_script):
         _write_script_snapshots(path, calling_script)
 
+    _auto_archive(path, metadata, calling_script)
 
+    # No local metadata write
