@@ -1,5 +1,7 @@
 ﻿# whichscript
 
+[![DOI](https://zenodo.org/badge/1018987304.svg)](https://doi.org/10.5281/zenodo.17058496)
+
 File‑first, friction‑free provenance for Python outputs.
 
 whichscript makes every file you save (plots, tables, text, etc.) self‑describing by:
@@ -162,32 +164,29 @@ Issues and PRs welcome. Please include a minimal repro script and a sample outpu
 
 If you use whichscript in your work, please cite it.
 
-- Plain: Replace placeholders after you mint a DOI via Zenodo.
-  - YourLastName, YourInitials. (2025). whichscript (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.TBD
+- Plain: Duwadi, S. (2025). whichscript (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.17058496
 
 - BibTeX
-  ```bibtex
-  @software{whichscript2025,
-    author  = {YOUR-LAST-NAME, YOUR-FIRST-NAME and Coauthor, FirstName},
+  `ibtex
+  @software{duwadi_whichscript_2025,
+    author  = {Duwadi, Sudan},
     title   = {whichscript: File-first provenance for Python outputs},
     year    = {2025},
-    version = {0.2.0},
-    doi     = {10.5281/zenodo.TBD},
-    url     = {https://github.com/YOUR-ORG/whichscript}
+    version = {1.0.0},
+    doi     = {10.5281/zenodo.17058496},
+    url     = {https://doi.org/10.5281/zenodo.17058496}
   }
-  ```
+  `
 
 - APA
-  - YourLastName, Y. (2025). whichscript (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.TBD
+  - Duwadi, S. (2025). whichscript (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.17058496
 
-This repository also includes a `CITATION.cff` (GitHub will render a “Cite this repository” box automatically).
-
-
-
+This repository includes a DOI (see badge above); GitHub's "Cite this repository" will reflect this DOI.
 ---
 
 ## AI Assistance Disclosure
 
 Portions of this project (code, refactors, and documentation) were developed with assistance from ChatGPT/Codex (OpenAI). All generated outputs were reviewed, edited, and validated by the maintainers prior to inclusion. Any mistakes or omissions remain the responsibility of the authors.
+
 
 
