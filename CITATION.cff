@@ -4,7 +4,6 @@ message: >-
 title: Whichscript: File-First Provenance For Python Output
 version: 1.0.0
 doi: 10.5281/zenodo.17058496
-type: software
 repository-code: https://github.com/duwadisudan/whichscript
 url: https://doi.org/10.5281/zenodo.17058496
 authors:
