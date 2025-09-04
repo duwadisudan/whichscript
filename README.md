@@ -33,48 +33,6 @@ Choose one:
 
 ---
 
-## Quick Start
-
-```python
-#start of whichscript code
-from whichscript import configure, enable_auto_logging
-
-# Minimal, recommended defaults
-configure(
-    archive=True,
-    archive_only=False,  # keep local hidden script snapshot next to the output
-    archive_dir=r"<your_archive_dir>",
-    hide_sidecars=True,  # mark local sidecars Hidden on Windows
-    metadata=False,       # keep metadata only inside archive (avoid local .json)
-    snapshot_script=False,
-    snapshot_py=True,     # local <output>.script.py (Hidden)
-    local_imports_snapshot=False,
-)
-
-enable_auto_logging()
-#end of whichscript code
-
-# Your code as usual
-
-import matplotlib.pyplot as plt
-from pathlib import Path
-
-fig, ax = plt.subplots()
-ax.plot([1, 2, 3], [4, 5, 9])
-out = Path(r"<your_output_dir>\\my_plot.png")
-out.parent.mkdir(parents=True, exist_ok=True)
-fig.savefig(out, dpi=300, bbox_inches='tight')
-```
-
-What you get:
-
-- Next to the PNG (Hidden): `my_plot.png.script.py` (only)
-- Central archive: `whichscript_master_log/my_plot.png/YYYY-MM-DD/run-YYYYMMDD-HHMMSS/my_plot.png.ws.zip` containing:
-  - `metadata.json` (script path, runtime info, git, etc.)
-  - `script.py` (snapshot of the exact code)
-  - `deps/` (your local imported .py modules, excludes stdlib/site‑packages)
-
----
 
 ## Example: sudan_plot_try.py
 
@@ -108,7 +66,18 @@ fig, ax = plt.subplots(); ax.plot(xs, ys)
 out = Path(r"<your_output_dir>\\my_plot.png")
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=300, bbox_inches='tight')
+
 ```
+
+What you get:
+
+- Next to the PNG (Hidden): `my_plot.png.script.py` (only)
+- Central archive: `whichscript_master_log/my_plot.png/YYYY-MM-DD/run-YYYYMMDD-HHMMSS/my_plot.png.ws.zip` containing:
+  - `metadata.json` (script path, runtime info, git, etc.)
+  - `script.py` (snapshot of the exact code)
+  - `deps/` (your local imported .py modules, excludes stdlib/site‑packages)
+
+---
 
 Verify:
 
