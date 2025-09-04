@@ -1,111 +1,250 @@
-# whichscript
+﻿# whichscript
 
-This project aims to build a software solution that tracks intermediate outputs and keeps a record of the script that generated them.
+File‑first, friction‑free provenance for Python outputs.
+
+whichscript makes every file you save (plots, tables, text, etc.) self‑describing by:
+
+- Writing a hidden script snapshot next to the output (so you can jump straight to the code).
+- Building a compact, output‑centric archive (.ws.zip) that contains your script, metadata, and only your local imported .py modules.
+- Requiring only two lines in your script: `configure(...)` and `enable_auto_logging()` — no wrappers, no decorators, no servers.
+
+## Highlights
+
+- Output‑first archives: one .ws.zip per output ⇒ easy to share and audit.
+- Hidden local sidecars: `<output>.script.py` (and optionally metadata). No clutter in folders.
+- Zero infra: No DB or UI required; integrates well with lab shares and Windows.
+- Script snapshot (not just git): captures exact code even with uncommitted changes; still records git commit/dirty when available.
+- Friendly on Windows/network drives: safe writes and Hidden attributes; right‑click to open generating script.
+
+---
 
 ## Installation
 
-Clone the repository and make sure `python3` is available on your system. The package does not require any third-party dependencies.
+Choose one:
 
-## Usage
+- Install editable (recommended):
+  ```bash
+  pip install -e "U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript"
+  ```
+- Or add to PYTHONPATH (one‑off):
+  ```powershell
+  $env:PYTHONPATH = 'U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript'
+  ```
 
-To manually save an output, call `whichscript.save_output` with the data and
-path. A metadata JSON file and a copy of the executing script will be written
-next to your output.
-
-For automatic logging of all file writes, call
-`whichscript.enable_auto_logging()` once at the start of your script. Any file
-opened in write mode will have its metadata and a copy of the calling script
-saved alongside it.
-
-```bash
-python example_analysis.py
+For the right‑click opener, you can run the launcher directly (no install needed):
+```powershell
+C:\Users\duwad\anaconda3\envs\cedalion\python.exe "U:\...\whichscript\whichscript\open_generating_script.pyw" "U:\...\my_plot.png"
 ```
 
-This will create `output/result.txt`, `output/result.txt.metadata.json`, and `output/result.txt.script`.
+---
+
+## Quick Start
+
+```python
+from whichscript import configure, enable_auto_logging
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# Minimal, recommended defaults
+configure(
+    archive=True,
+    archive_only=False,  # keep local hidden script snapshot next to the output
+    archive_dir=r"U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript_master_log",
+    hide_sidecars=True,  # mark local sidecars Hidden on Windows
+    metadata=False,       # keep metadata only inside archive (avoid local .json)
+    snapshot_script=False,
+    snapshot_py=True,     # local <output>.script.py (Hidden)
+    local_imports_snapshot=False,
+)
+
+enable_auto_logging()
+
+# Your code as usual
+fig, ax = plt.subplots()
+ax.plot([1, 2, 3], [4, 5, 9])
+out = Path(r"U:\...\plot_test_result\my_plot.png")
+out.parent.mkdir(parents=True, exist_ok=True)
+fig.savefig(out, dpi=300, bbox_inches='tight')
+```
+
+What you get:
+
+- Next to the PNG (Hidden): `my_plot.png.script.py` (only)
+- Central archive: `whichscript_master_log/my_plot.png/YYYY-MM-DD/run-YYYYMMDD-HHMMSS/my_plot.png.ws.zip` containing:
+  - `metadata.json` (script path, runtime info, git, etc.)
+  - `script.py` (snapshot of the exact code)
+  - `deps/` (your local imported .py modules, excludes stdlib/site‑packages)
+
+---
+
+## Example: sudan_plot_try.py
+
+```python
+from whichscript import configure, enable_auto_logging
+from whichscript.localmod_demo import transform_points
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+configure(
+    archive=True,
+    archive_only=False,
+    archive_dir=r"U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript_master_log",
+    hide_sidecars=True,
+    metadata=False,
+    snapshot_script=False,
+    snapshot_py=True,
+    local_imports_snapshot=False,
+)
+
+enable_auto_logging()
+
+xs, ys = transform_points([1, 6, 3, 7], [4, 5, 8, 10], offset=2)
+fig, ax = plt.subplots(); ax.plot(xs, ys)
+out = Path(r"U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\plot_test_result\my_plot.png")
+out.parent.mkdir(parents=True, exist_ok=True)
+fig.savefig(out, dpi=300, bbox_inches='tight')
+```
+
+Verify:
+
+- Folder: `...\plot_test_result` has `my_plot.png` and Hidden `my_plot.png.script.py`.
+- Archive: `...\whichscript_master_log\my_plot.png\YYYY-MM-DD\run-...\my_plot.png.ws.zip`
+
+---
+
+## Configuration
+
+Call `configure(...)` once per script, or use env vars. Flags:
+
+- `archive` (bool): build central .ws.zip per output.
+- `archive_only` (bool): if True, suppress all local sidecars (not recommended for Windows shares). If False (default here), keep local Hidden `script.py`.
+- `archive_dir` (str): root folder for central archives.
+- `hide_sidecars` (bool): mark local sidecars Hidden on Windows.
+- `metadata` (bool): write local `<output>.metadata.json`. Recommended False on network shares; metadata is always embedded in the central archive.
+- `snapshot_script` / `snapshot_py` (bool): control local script sidecars; keep `snapshot_py=True` for `script.py`.
+- `local_imports_snapshot` (bool): write `<output>.deps.zip` locally (usually False; the archive packs deps for you).
+- `local_imports_root` (list[str]): optional roots to restrict which .py files count as “local”.
+
+Environment variable equivalents (set before Python):
+
+- `WHICH_SCRIPT_ARCHIVE` (1/0)
+- `WHICH_SCRIPT_ARCHIVE_DIR`
+- `WHICH_SCRIPT_ARCHIVE_ONLY` (1/0)
+- `WHICH_SCRIPT_HIDE_SIDECARS` (1/0)
+- `WHICH_SCRIPT_METADATA` (1/0)
+- `WHICH_SCRIPT_SNAPSHOT_PY` (1/0)
+- `WHICH_SCRIPT_LOCAL_IMPORTS` (1/0)
+
+Interactive sessions (cells/notebooks): optionally set `WHICH_SCRIPT_PATH` to label the snapshot:
+```python
+import os; os.environ['WHICH_SCRIPT_PATH'] = r'U:\path\to\your_script.py'
+```
+
+---
+
+## Open Generating Script (Explorer)
+
+Add a right‑click menu (user scope) to open the generating script from any output:
+
+```reg
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\whichscript_open]
+@="Open Generating Script"
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\whichscript_open\command]
+@="\"C:\\Users\\duwad\\anaconda3\\envs\\cedalion\\pythonw.exe\" \"U:\\eng_research_hrc_binauralhearinglab\\Sudan\\Labs\\Sen Lab\\whichscript\\whichscript\\open_generating_script.pyw\" \"%1\""
+```
+
+- Import the `.reg`, then right‑click → Show more options → Open Generating Script.
+- Alternatively from terminal:
+  ```powershell
+  python "U:\...\whichscript\whichscript\open_generating_script.pyw" "U:\...\my_plot.png"
+  ```
+- To prefer VS Code, add Code to PATH or set:
+  ```powershell
+  setx VSCODE_BIN "C:\\Users\\duwad\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
+  ```
+
+---
+
+## How it works
+
+- Hooks Python’s file writes (via a safe wrapper) to attach provenance.
+- Writes the script snapshot (`.script.py`) next to the output (Hidden) for instant open.
+- Builds an output‑centric archive with script, metadata, and local deps.
+- Avoids truncating Hidden files on network shares; metadata is embedded in the archive by default.
+
+---
+
+## Troubleshooting
+
+- “Permission denied … metadata.json” on U: shares ⇒ set `metadata=False` (recommended), or re‑enable later after we roll an atomic replace.
+- “No module named whichscript.open_script” ⇒ ensure repo installed (`pip install -e path`) or set `PYTHONPATH`.
+- Right‑click shows “no app associated” ⇒ associate `.py` with VS Code/Notepad, or use the registry command above with `pythonw.exe`.
+- Hidden files not visible ⇒ enable “Hidden items” in Explorer to inspect sidecars.
+
+---
+
+## Why whichscript (vs MLflow, W&B, DVC, Sacred, Sumatra, noWorkflow)
+
+- File‑first provenance: every saved file is self‑describing without a service or UI.
+- Minimal: import + configure + enable; no run managers, no decorators.
+- Snapshot exact script (not just git), and still record git commit/dirty if present.
+- Output‑centric archives: focused, portable bundles — easy to email, zip, or pin.
+- Windows‑friendly: Hidden sidecars, Explorer integration, safe behavior on network shares.
+- Plays nice with others: archives can be pushed to DVC/MLflow later.
+
+---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT (or your preferred license).
 
-## Interactive sessions
+## Contributing
 
-In notebooks or interactive cells, there may be no real script file.
-Set an environment variable to provide a script path to record:
+Issues and PRs welcome. Please include a minimal repro script and a sample output file when reporting problems.
 
-- On Windows PowerShell:
-  $env:WHICH_SCRIPT_PATH = "C:\\path\\to\\your_script.py"
-- In Python before enabling logging:
-  import os; os.environ["WHICH_SCRIPT_PATH"] = r"C:\\path\\to\\your_script.py"
+---
 
-When set, whichscript stores this path in the metadata and, if the file
-exists, writes a .script copy alongside your output files.
+## How to Cite
 
-## Open Generating Script (CLI)
+If you use whichscript in your work, please cite it.
 
-You can open the generating script (prefers the snapshot) for any output
-file using a small helper:
+- Plain: Replace placeholders after you mint a DOI via Zenodo.
+  - YourLastName, YourInitials. (2025). whichscript (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.TBD
 
-- Run: python -m whichscript.open_script <path/to/your/output.ext>
-- Behavior:
-  - If <output>.script exists, it opens that snapshot.
-  - Else, it reads <output>.metadata.json and opens script_path if present.
-  - It tries VS Code first (if code is on PATH); otherwise falls back to
-    the OS default application. You can force the default with --force-default.
+- BibTeX
+  ```bibtex
+  @software{whichscript2025,
+    author  = {YOUR-LAST-NAME, YOUR-FIRST-NAME and Coauthor, FirstName},
+    title   = {whichscript: File-first provenance for Python outputs},
+    year    = {2025},
+    version = {0.2.0},
+    doi     = {10.5281/zenodo.TBD},
+    url     = {https://github.com/YOUR-ORG/whichscript}
+  }
+  ```
 
-### Windows right-click integration (optional)
+- APA
+  - YourLastName, Y. (2025). whichscript (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.TBD
 
-Add a context menu entry to open the generating script directly from File Explorer.
-Create a .reg file with the following contents and double-click to import:
+This repository also includes a `CITATION.cff` (GitHub will render a “Cite this repository” box automatically).
 
-`
-Windows Registry Editor Version 5.00
+### Publish Checklist (for a DOI and Google Scholar visibility)
 
-[HKEY_CLASSES_ROOT\*\shell\whichscript_open]
-@="Open Generating Script"
+1) Make the GitHub repo public.
+2) Enable Zenodo-GitHub integration (https://zenodo.org → GitHub tab → toggle this repo on).
+3) Create a GitHub Release (e.g., v0.2.0). Zenodo will mint a DOI.
+4) Update:
+   - `whichscript/README.md` (How to Cite section + DOI badge)
+   - `whichscript/CITATION.cff` (doi, authors, affiliation, repository-code)
+5) Optional but recommended for Scholar indexing:
+   - Add a short PDF (2 pages) describing the tool (title, authors, abstract). Link it from the README.
+   - Alternatively, create a Zenodo “software” record with the PDF attached.
 
-[HKEY_CLASSES_ROOT\*\shell\whichscript_open\command]
-@="C:\\Path\\To\\python.exe -m whichscript.open_script \"%1\""
-`
+Once the DOI is minted, you can add a DOI badge here:
 
-Adjust the Python path accordingly. You can also point it to a bundled EXE if
-you package this tool.
-
-## Packaging to EXE (Windows)
-
-Build a single-file EXE of the opener using PyInstaller:
-
-- From a terminal in whichscript/whichscript:
-  - scripts\\build_open_exe.bat
-- Result: dist\\whichscript-open.exe
-
-You can then point the context menu at that EXE instead of pythonw.exe:
-
-`
-Windows Registry Editor Version 5.00
-
-[HKEY_CLASSES_ROOT\*\shell\whichscript_open]
-@="Open Generating Script"
-
-[HKEY_CLASSES_ROOT\*\shell\whichscript_open\command]
-@="U:\\path\\to\\dist\\whichscript-open.exe \"%1\""
-`
-
-If you prefer not to use a .spec file, the batch script invokes PyInstaller
-with --onefile and --noconsole. You can customize icons or metadata via
-standard PyInstaller flags.
-
-## Script Snapshot Convenience (.script.py)
-
-By default, whichscript now writes a second snapshot next to each output:
-
-- `<output>.<ext>.script` (raw script copy, as before)
-- `<output>.<ext>.script.py` (same content with .py extension for easy opening)
-
-To disable the `.script.py` convenience file, set an environment variable before
-running your script:
-
-- Windows PowerShell: `$env:WHICH_SCRIPT_SNAPSHOT_PY = "0"`
-- Python: `import os; os.environ["WHICH_SCRIPT_SNAPSHOT_PY"] = "0"`
-
-The CLI opener prefers the `.script.py` snapshot when present, then falls back
-to `.script`, then to the original `script_path` recorded in metadata.
+```
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.TBD.svg)](https://doi.org/10.5281/zenodo.TBD)
+```
