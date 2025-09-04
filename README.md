@@ -137,7 +137,7 @@ import os; os.environ['WHICH_SCRIPT_PATH'] = r'<your_path>
 
 ---
 
-## Why whichscript (vs MLflow, W&B, DVC, Sacred, Sumatra, noWorkflow)
+## Why whichscript (vs other available tools)
 
 - File‑first provenance: every saved file is self‑describing without a service or UI.
 - Minimal: import + configure + enable; no run managers, no decorators.
