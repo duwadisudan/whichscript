@@ -206,21 +206,4 @@ If you use whichscript in your work, please cite it.
 
 This repository also includes a `CITATION.cff` (GitHub will render a “Cite this repository” box automatically).
 
-### Publish Checklist (for a DOI and Google Scholar visibility)
-
-1) Make the GitHub repo public.
-2) Enable Zenodo-GitHub integration (https://zenodo.org → GitHub tab → toggle this repo on).
-3) Create a GitHub Release (e.g., v0.2.0). Zenodo will mint a DOI.
-4) Update:
-   - `whichscript/README.md` (How to Cite section + DOI badge)
-   - `whichscript/CITATION.cff` (doi, authors, affiliation, repository-code)
-5) Optional but recommended for Scholar indexing:
-   - Add a short PDF (2 pages) describing the tool (title, authors, abstract). Link it from the README.
-   - Alternatively, create a Zenodo “software” record with the PDF attached.
-
-Once the DOI is minted, you can add a DOI badge here:
-
-```
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.TBD.svg)](https://doi.org/10.5281/zenodo.TBD)
-```
 
