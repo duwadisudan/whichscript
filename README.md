@@ -31,11 +31,6 @@ Choose one:
   $env:PYTHONPATH = '<your_repo_path>'
   ```
 
-For the right‑click opener, you can run the launcher directly (no install needed):
-```powershell
-C:\Users\duwad\anaconda3\envs\cedalion\python.exe "<your_path>" "<your_path>"
-```
-
 ---
 
 ## Quick Start
