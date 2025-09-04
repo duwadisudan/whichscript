@@ -14,7 +14,7 @@ whichscript makes every file you save (plots, tables, text, etc.) self‑describ
 - Hidden local sidecars: `<output>.script.py` (and optionally metadata). No clutter in folders.
 - Zero infra: No DB or UI required; integrates well with lab shares and Windows.
 - Script snapshot (not just git): captures exact code even with uncommitted changes; still records git commit/dirty when available.
-- Friendly on Windows/network drives: safe writes and Hidden attributes; right‑click to open generating script.
+- Friendly on Windows/network drives: safe writes and Hidden attributes
 
 ---
 
