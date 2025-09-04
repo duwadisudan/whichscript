@@ -34,7 +34,7 @@ Choose one:
 ---
 
 
-## Example: sudan_plot_try.py
+## Example: example_analysis.py
 
 ```python
 
