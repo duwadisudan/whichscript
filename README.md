@@ -37,8 +37,6 @@ Choose one:
 
 ```python
 from whichscript import configure, enable_auto_logging
-import matplotlib.pyplot as plt
-from pathlib import Path
 
 # Minimal, recommended defaults
 configure(
@@ -55,6 +53,9 @@ configure(
 enable_auto_logging()
 
 # Your code as usual
+
+import matplotlib.pyplot as plt
+from pathlib import Path
 fig, ax = plt.subplots()
 ax.plot([1, 2, 3], [4, 5, 9])
 out = Path(r"<your_output_dir>\my_plot.png")
@@ -76,9 +77,6 @@ What you get:
 
 ```python
 from whichscript import configure, enable_auto_logging
-from whichscript.localmod_demo import transform_points
-import matplotlib.pyplot as plt
-from pathlib import Path
 
 configure(
     archive=True,
@@ -92,6 +90,11 @@ configure(
 )
 
 enable_auto_logging()
+
+
+from whichscript.localmod_demo import transform_points
+import matplotlib.pyplot as plt
+from pathlib import Path
 
 xs, ys = transform_points([1, 6, 3, 7], [4, 5, 8, 10], offset=2)
 fig, ax = plt.subplots(); ax.plot(xs, ys)
