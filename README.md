@@ -207,3 +207,9 @@ If you use whichscript in your work, please cite it.
 This repository also includes a `CITATION.cff` (GitHub will render a “Cite this repository” box automatically).
 
 
+
+---
+
+## AI Assistance Disclosure
+
+Portions of this project (code, refactors, and documentation) were developed with assistance from ChatGPT/Codex (OpenAI). All generated outputs were reviewed, edited, and validated by the maintainers prior to inclusion. Any mistakes or omissions remain the responsibility of the authors.
