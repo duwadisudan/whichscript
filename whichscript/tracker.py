@@ -206,15 +206,28 @@ def _maybe_set_hidden(path: str, hide: bool) -> None:
         pass
 
 
+
+def _atomic_copy_script(dst: str, src: str, hide: bool) -> None:
+    """Copy src -> dst atomically, handling Hidden attr on Windows."""
+    tmp = dst + ".tmp"
+    if sys.platform.startswith('win') and os.path.exists(dst):
+        try:
+            subprocess.run(['attrib', '-H', dst], check=False)
+        except Exception:
+            pass
+    shutil.copyfile(src, tmp)
+    os.replace(tmp, dst)
+    _maybe_set_hidden(dst, hide)
+
+
 def _write_script_snapshots(target_base: str, script_path: str) -> None:
     global _skip_logging
     try:
         _skip_logging = True
         if _cfg_snapshot_py:
+            dst = target_base + ".script.py"
             try:
-                dst = target_base + ".script.py"
-                shutil.copy(script_path, dst)
-                _maybe_set_hidden(dst, _CFG_HIDE_SIDECARS)
+                _atomic_copy_script(dst, script_path, _CFG_HIDE_SIDECARS)
             except Exception:
                 pass
     finally:
@@ -312,3 +325,4 @@ def _record_write(path: str, params: dict[str, Any]) -> None:
     _auto_archive(path, metadata, calling_script)
 
     # No local metadata write
+

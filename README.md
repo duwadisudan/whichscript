@@ -24,16 +24,16 @@ Choose one:
 
 - Install editable (recommended):
   ```bash
-  pip install -e "U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript"
+  pip install -e "<your_repo_path>"
   ```
 - Or add to PYTHONPATH (one‑off):
   ```powershell
-  $env:PYTHONPATH = 'U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript'
+  $env:PYTHONPATH = '<your_repo_path>'
   ```
 
 For the right‑click opener, you can run the launcher directly (no install needed):
 ```powershell
-C:\Users\duwad\anaconda3\envs\cedalion\python.exe "U:\...\whichscript\whichscript\open_generating_script.pyw" "U:\...\my_plot.png"
+C:\Users\duwad\anaconda3\envs\cedalion\python.exe "<your_path>" "<your_path>"
 ```
 
 ---
@@ -49,7 +49,7 @@ from pathlib import Path
 configure(
     archive=True,
     archive_only=False,  # keep local hidden script snapshot next to the output
-    archive_dir=r"U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript_master_log",
+    archive_dir=r"<your_archive_dir>",
     hide_sidecars=True,  # mark local sidecars Hidden on Windows
     metadata=False,       # keep metadata only inside archive (avoid local .json)
     snapshot_script=False,
@@ -62,7 +62,7 @@ enable_auto_logging()
 # Your code as usual
 fig, ax = plt.subplots()
 ax.plot([1, 2, 3], [4, 5, 9])
-out = Path(r"U:\...\plot_test_result\my_plot.png")
+out = Path(r"<your_output_dir>\my_plot.png")
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=300, bbox_inches='tight')
 ```
@@ -88,7 +88,7 @@ from pathlib import Path
 configure(
     archive=True,
     archive_only=False,
-    archive_dir=r"U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\whichscript_master_log",
+    archive_dir=r"<your_archive_dir>",
     hide_sidecars=True,
     metadata=False,
     snapshot_script=False,
@@ -100,7 +100,7 @@ enable_auto_logging()
 
 xs, ys = transform_points([1, 6, 3, 7], [4, 5, 8, 10], offset=2)
 fig, ax = plt.subplots(); ax.plot(xs, ys)
-out = Path(r"U:\eng_research_hrc_binauralhearinglab\Sudan\Labs\Sen Lab\whichscript\plot_test_result\my_plot.png")
+out = Path(r"<your_output_dir>\my_plot.png")
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=300, bbox_inches='tight')
 ```
@@ -137,36 +137,13 @@ Environment variable equivalents (set before Python):
 
 Interactive sessions (cells/notebooks): optionally set `WHICH_SCRIPT_PATH` to label the snapshot:
 ```python
-import os; os.environ['WHICH_SCRIPT_PATH'] = r'U:\path\to\your_script.py'
+import os; os.environ['WHICH_SCRIPT_PATH'] = r'<your_path>
 ```
 
 ---
 
-## Open Generating Script (Explorer)
 
-Add a right‑click menu (user scope) to open the generating script from any output:
 
-```reg
-Windows Registry Editor Version 5.00
-
-[HKEY_CURRENT_USER\Software\Classes\*\shell\whichscript_open]
-@="Open Generating Script"
-
-[HKEY_CURRENT_USER\Software\Classes\*\shell\whichscript_open\command]
-@="\"C:\\Users\\duwad\\anaconda3\\envs\\cedalion\\pythonw.exe\" \"U:\\eng_research_hrc_binauralhearinglab\\Sudan\\Labs\\Sen Lab\\whichscript\\whichscript\\open_generating_script.pyw\" \"%1\""
-```
-
-- Import the `.reg`, then right‑click → Show more options → Open Generating Script.
-- Alternatively from terminal:
-  ```powershell
-  python "U:\...\whichscript\whichscript\open_generating_script.pyw" "U:\...\my_plot.png"
-  ```
-- To prefer VS Code, add Code to PATH or set:
-  ```powershell
-  setx VSCODE_BIN "C:\\Users\\duwad\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
-  ```
-
----
 
 ## How it works
 
@@ -248,3 +225,4 @@ Once the DOI is minted, you can add a DOI badge here:
 ```
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.TBD.svg)](https://doi.org/10.5281/zenodo.TBD)
 ```
+
