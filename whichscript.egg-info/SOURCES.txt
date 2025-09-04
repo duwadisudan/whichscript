@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+tests/test_auto_logging.py
+whichscript/__init__.py
+whichscript/archiver.py
+whichscript/localmod_demo.py
+whichscript/open_script.py
+whichscript/tracker.py
+whichscript.egg-info/PKG-INFO
+whichscript.egg-info/SOURCES.txt
+whichscript.egg-info/dependency_links.txt
+whichscript.egg-info/top_level.txt

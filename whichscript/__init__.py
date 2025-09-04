@@ -1,6 +1,6 @@
 ﻿"""Utility to track scripts that generate outputs."""
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 
 from .tracker import (
     save_output,
