@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from whichscript.localmod_demo import transform_points
 
 #%%
-xs, ys = transform_points([1, 6, 3, 85], [4, 5, 8, 10], offset=2)
+xs, ys = transform_points([1, 6, 3, 90], [4, 5, 8, 10], offset=2)
 fig, ax = plt.subplots()
 ax.plot(xs, ys)
 
