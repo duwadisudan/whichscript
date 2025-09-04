@@ -4,9 +4,9 @@ message: >-
 type: software
 title: "Whichscript: File-First Provenance For Python Output"
 version: "1.0.0"
-doi: 10.5281/zenodo.17058496
+doi: 10.5281/zenodo.17058497
 repository-code: "https://github.com/duwadisudan/whichscript"
-url: "https://doi.org/10.5281/zenodo.17058496"
+url: "https://doi.org/10.5281/zenodo.17058497"
 authors:
   - family-names: Duwadi
     given-names: Sudan
