@@ -22,6 +22,8 @@ whichscript makes every file you save (plots, tables, text, etc.) self‑describ
 
 ## Installation
 
+Locate your cloned repo and navigate to the directory.
+
 Choose one:
 
 - Install editable (recommended):
