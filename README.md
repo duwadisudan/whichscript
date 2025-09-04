@@ -61,7 +61,7 @@ from pathlib import Path
 
 fig, ax = plt.subplots()
 ax.plot([1, 2, 3], [4, 5, 9])
-out = Path(r"<your_output_dir>\my_plot.png")
+out = Path(r"<your_output_dir>\\my_plot.png")
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=300, bbox_inches='tight')
 ```
@@ -105,7 +105,7 @@ from pathlib import Path
 
 xs, ys = transform_points([1, 6, 3, 7], [4, 5, 8, 10], offset=2)
 fig, ax = plt.subplots(); ax.plot(xs, ys)
-out = Path(r"<your_output_dir>\my_plot.png")
+out = Path(r"<your_output_dir>\\my_plot.png")
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=300, bbox_inches='tight')
 ```
@@ -220,4 +220,5 @@ This repository also includes a `CITATION.cff` (GitHub will render a “Cite thi
 ## AI Assistance Disclosure
 
 Portions of this project (code, refactors, and documentation) were developed with assistance from ChatGPT/Codex (OpenAI). All generated outputs were reviewed, edited, and validated by the maintainers prior to inclusion. Any mistakes or omissions remain the responsibility of the authors.
+
 
