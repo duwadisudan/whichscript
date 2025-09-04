@@ -1,8 +1,0 @@
-﻿Windows Registry Editor Version 5.00
-
-[HKEY_CURRENT_USER\Software\Classes\SystemFileAssociations\.png\shell\whichscript_open]
-@="Open Generating Script"
-
-[HKEY_CURRENT_USER\Software\Classes\SystemFileAssociations\.png\shell\whichscript_open\command]
-@="<pythonw_exe> \"<your_repo_path>\\whichscript\\whichscript\\open_generating_script.pyw\" \"%1\""
-
