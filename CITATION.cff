@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the metadata below.
+title: Whichscript: File-First Provenance For Python Output
+version: 1.0.0
+doi: 10.5281/zenodo.17058496
+type: software
+repository-code: https://github.com/duwadisudan/whichscript
+url: https://doi.org/10.5281/zenodo.17058496
+authors:
+  - family-names: Duwadi
+    given-names: Sudan
+license: MIT
+preferred-citation:
+  type: software
+  title: Whichscript: File-First Provenance For Python Output
+  authors:
+    - family-names: Duwadi
+      given-names: Sudan
+  version: 1.0.0
+  doi: 10.5281/zenodo.17058496
+  url: https://doi.org/10.5281/zenodo.17058496
