@@ -24,7 +24,7 @@ Choose one:
 
 - Install editable (recommended):
   ```bash
-  pip install -e "<your_repo_path>"
+  pip install -e .
   ```
 - Or add to PYTHONPATH (one‑off):
   ```powershell
@@ -220,3 +220,4 @@ This repository also includes a `CITATION.cff` (GitHub will render a “Cite thi
 ## AI Assistance Disclosure
 
 Portions of this project (code, refactors, and documentation) were developed with assistance from ChatGPT/Codex (OpenAI). All generated outputs were reviewed, edited, and validated by the maintainers prior to inclusion. Any mistakes or omissions remain the responsibility of the authors.
+
