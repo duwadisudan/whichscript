@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "whichscript"
-version = "0.2.0"
+version = "1.0.0"
 description = "File-first, friction-free provenance for Python outputs."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "Your Name", email = "your.email@example.com" }]
+authors = [{ name = "Sudan Duwadi" }]
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
