@@ -152,7 +152,7 @@ import os; os.environ['WHICH_SCRIPT_PATH'] = r'<your_path>
 
 ## License
 
-MIT (or your preferred license).
+MIT
 
 ## Contributing
 
